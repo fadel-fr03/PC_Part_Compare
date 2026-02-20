@@ -1,23 +1,54 @@
-// Placeholder register function
+const { User } = require("../models");
+const generateToken = require("../utils/generateToken");
+
+/**
+ * @desc    Register a new user
+ * @route   POST /api/auth/register
+ * @access  Public
+ */
 exports.register = async (req, res) => {
   try {
     const { username, email, password } = req.body;
 
-    // TODO: Check if user already exists
-    // TODO: Hash password
-    // TODO: Create user in database
-    // TODO: Generate JWT token
+    // Check if user already exists
+    const userExists = await User.findOne({
+      $or: [{ email }, { username }],
+    });
+
+    if (userExists) {
+      return res.status(400).json({
+        success: false,
+        message:
+          userExists.email === email
+            ? "Email already registered"
+            : "Username already taken",
+      });
+    }
+
+    // Create user (password will be hashed by pre-save middleware)
+    const user = await User.create({
+      username,
+      email,
+      password,
+    });
+
+    // Generate JWT token
+    const token = generateToken(user._id);
 
     res.status(201).json({
       success: true,
-      message: "User registration successful (placeholder)",
+      message: "User registered successfully",
       data: {
-        username,
-        email,
-        // token: "placeholder_token_will_be_generated_later"
+        user: {
+          id: user._id,
+          username: user.username,
+          email: user.email,
+        },
+        token,
       },
     });
   } catch (error) {
+    console.error("Registration error:", error);
     res.status(500).json({
       success: false,
       message: "Registration failed",
@@ -26,27 +57,110 @@ exports.register = async (req, res) => {
   }
 };
 
-// Placeholder login function
+/**
+ * @desc    Login user
+ * @route   POST /api/auth/login
+ * @access  Public
+ */
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // TODO: Find user by email
-    // TODO: Verify password
-    // TODO: Generate JWT token
+    // Find user and include password field
+    const user = await User.findOne({ email }).select("+password");
+
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid email or password",
+      });
+    }
+
+    // Verify password
+    const isPasswordValid = await user.comparePassword(password);
+
+    if (!isPasswordValid) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid email or password",
+      });
+    }
+
+    // Generate JWT token
+    const token = generateToken(user._id);
 
     res.status(200).json({
       success: true,
-      message: "User login successful (placeholder)",
+      message: "Login successful",
       data: {
-        email,
-        // token: "placeholder_token_will_be_generated_later"
+        user: {
+          id: user._id,
+          username: user.username,
+          email: user.email,
+        },
+        token,
       },
     });
   } catch (error) {
+    console.error("Login error:", error);
     res.status(500).json({
       success: false,
       message: "Login failed",
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * @desc    Logout user (client-side token removal)
+ * @route   POST /api/auth/logout
+ * @access  Private
+ */
+exports.logout = async (req, res) => {
+  try {
+    // With client-side approach, we just send success response
+    // Client will remove the token from storage
+    res.status(200).json({
+      success: true,
+      message: "Logout successful",
+      data: null,
+    });
+  } catch (error) {
+    console.error("Logout error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Logout failed",
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * @desc    Get current logged in user
+ * @route   GET /api/auth/me
+ * @access  Private
+ */
+exports.getMe = async (req, res) => {
+  try {
+    // req.user is set by auth middleware
+    const user = await User.findById(req.user.id);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        user: {
+          id: user._id,
+          username: user.username,
+          email: user.email,
+          createdAt: user.createdAt,
+        },
+      },
+    });
+  } catch (error) {
+    console.error("Get user error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to get user data",
       error: error.message,
     });
   }
