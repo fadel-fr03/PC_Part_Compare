@@ -18,7 +18,7 @@ const sampleParts = [
       socket: "AM5",
       tdp: "170W"
     },
-    imageUrl: "https://placeholder.com/cpu-amd-ryzen9-7950x.jpg",
+    imageUrl: "https://placehold.co/400x300/1a1a2e/00cfff?text=AMD+Ryzen+9+7950X",
     averageRating: 4.7
   },
   {
@@ -34,7 +34,7 @@ const sampleParts = [
       socket: "LGA1700",
       tdp: "125W"
     },
-    imageUrl: "https://placeholder.com/cpu-intel-i9-14900k.jpg",
+    imageUrl: "https://placehold.co/400x300/1a1a2e/00cfff?text=Intel+i9-14900K",
     averageRating: 4.6
   },
   {
@@ -50,7 +50,7 @@ const sampleParts = [
       socket: "AM5",
       tdp: "105W"
     },
-    imageUrl: "https://placeholder.com/cpu-amd-ryzen5-7600x.jpg",
+    imageUrl: "https://placehold.co/400x300/1a1a2e/00cfff?text=AMD+Ryzen+5+7600X",
     averageRating: 4.5
   },
 
@@ -67,7 +67,7 @@ const sampleParts = [
       cudaCores: "16384",
       tdp: "450W"
     },
-    imageUrl: "https://placeholder.com/gpu-rtx-4090.jpg",
+    imageUrl: "https://placehold.co/400x300/1a1a2e/a855f7?text=RTX+4090",
     averageRating: 4.9
   },
   {
@@ -82,7 +82,7 @@ const sampleParts = [
       streamProcessors: "6144",
       tdp: "355W"
     },
-    imageUrl: "https://placeholder.com/gpu-rx-7900xtx.jpg",
+    imageUrl: "https://placehold.co/400x300/1a1a2e/a855f7?text=RX+7900+XTX",
     averageRating: 4.6
   },
   {
@@ -97,7 +97,7 @@ const sampleParts = [
       cudaCores: "5888",
       tdp: "200W"
     },
-    imageUrl: "https://placeholder.com/gpu-rtx-4070.jpg",
+    imageUrl: "https://placehold.co/400x300/1a1a2e/a855f7?text=RTX+4070",
     averageRating: 4.7
   },
 
@@ -115,7 +115,7 @@ const sampleParts = [
       modules: "2x16GB",
       voltage: "1.35V"
     },
-    imageUrl: "https://placeholder.com/ram-corsair-vengeance-ddr5.jpg",
+    imageUrl: "https://placehold.co/400x300/1a1a2e/34d399?text=Corsair+DDR5+32GB",
     averageRating: 4.8
   },
   {
@@ -131,7 +131,7 @@ const sampleParts = [
       modules: "2x32GB",
       voltage: "1.4V"
     },
-    imageUrl: "https://placeholder.com/ram-gskill-trident-z5.jpg",
+    imageUrl: "https://placehold.co/400x300/1a1a2e/34d399?text=G.Skill+Trident+Z5",
     averageRating: 4.7
   },
 
@@ -149,7 +149,7 @@ const sampleParts = [
       writeSpeed: "6900 MB/s",
       type: "NVMe SSD"
     },
-    imageUrl: "https://placeholder.com/ssd-samsung-990pro.jpg",
+    imageUrl: "https://placehold.co/400x300/1a1a2e/f59e0b?text=Samsung+990+PRO+2TB",
     averageRating: 4.9
   },
 
@@ -167,7 +167,7 @@ const sampleParts = [
       maxMemory: "128GB",
       pcie: "PCIe 5.0"
     },
-    imageUrl: "https://placeholder.com/mobo-asus-rog-x670e.jpg",
+    imageUrl: "https://placehold.co/400x300/1a1a2e/fb923c?text=ASUS+ROG+X670E",
     averageRating: 4.8
   }
 ];
