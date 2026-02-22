@@ -2,7 +2,40 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  margin: 0;
+/* Smooth global */
+html, body { height: 100%; }
+body { @apply bg-slate-950 text-slate-100; }
+
+/* Premium glow animation */
+@keyframes glowPulse {
+  0%, 100% { filter: drop-shadow(0 0 10px rgba(56,189,248,.25)); }
+  50% { filter: drop-shadow(0 0 18px rgba(167,139,250,.35)); }
 }
+
+/* Floating chips */
+@keyframes floatY {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-14px); }
+}
+
+@keyframes driftX {
+  0% { transform: translateX(-15vw); opacity: 0; }
+  10% { opacity: .9; }
+  90% { opacity: .9; }
+  100% { transform: translateX(115vw); opacity: 0; }
+}
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.25s ease-out;
+}
+
+.float-y { animation: floatY 4.5s ease-in-out infinite; }
+.drift-x { animation: driftX 16s linear infinite; }
+
+.glow-pulse { animation: glowPulse 3.2s ease-in-out infinite; }
+
 
