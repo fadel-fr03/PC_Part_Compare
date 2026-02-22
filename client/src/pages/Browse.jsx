@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import PartCard from "../components/PartCard";
 import CompareBar from "../components/CompareBar";
+import { API_ENDPOINTS } from "../config/api";
 
 export default function Browse() {
   const [parts, setParts] = useState([]);
@@ -15,7 +16,7 @@ export default function Browse() {
       try {
         setLoading(true);
 
-        const res = await fetch("http://localhost:5000/api/parts");
+        const res = await fetch(API_ENDPOINTS.parts.list);
         const data = await res.json();
 
         // 🔹 backend returns: { success: true, data: [parts] }

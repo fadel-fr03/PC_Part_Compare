@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { API_ENDPOINTS } from "../config/api";
 
 const AuthContext = createContext(null);
 const LS_KEY = "compariq_auth"; 
@@ -32,7 +33,7 @@ export function AuthProvider({ children }) {
   }, [token, user]);
 
   async function login({ email, password }) {
-    const res = await fetch("http://localhost:5000/api/auth/login", {
+    const res = await fetch(API_ENDPOINTS.auth.login, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -56,7 +57,7 @@ export function AuthProvider({ children }) {
   }
 
   async function register({ name, email, password }) {
-    const res = await fetch("http://localhost:5000/api/auth/register", {
+    const res = await fetch(API_ENDPOINTS.auth.register, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
