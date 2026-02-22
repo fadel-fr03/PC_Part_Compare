@@ -4,33 +4,7 @@ import Breadcrumbs from "../components/BreadCrumbs";
 import ImageGallery from "../components/ImageGallery";
 import SpecsTable from "../components/SpecsTable";
 import { useCompare } from "../context/CompareContext";
-
-/**
- * ===================== BACKEND PLACEHOLDER =====================
- * TODO:
- * Replace frontend mock with:
- * GET /api/parts/:id
- *
- * Expected response:
- * {
- *   part: {
- *     id: string,
- *     name: string,
- *     brand: string,
- *     category: string,
- *     price?: number,
- *     ratingAvg?: number,
- *     summary?: string,
- *     images: string[],
- *     specs: {
- *       [groupName: string]: {
- *         [label: string]: string | number
- *       }
- *     }
- *   }
- * }
- * ===============================================================
- */
+import { API_ENDPOINTS } from "../config/api";
 
 export default function PartDetail() {
   const { id } = useParams();
@@ -38,23 +12,42 @@ export default function PartDetail() {
 
   const [part, setPart] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     (async () => {
       setLoading(true);
+      setError(null);
+      try {
+        const res = await fetch(API_ENDPOINTS.parts.byId(id));
+        const json = await res.json();
 
-      // ================= BACKEND TODO =================
-      // const res = await fetch(`/api/parts/${id}`);
-      // const { part } = await res.json();
-      // setPart(part);
-      // ================================================
+        if (!res.ok || !json.success) {
+          setError(json.message || "Part not found");
+          setPart(null);
+          return;
+        }
 
-      await sleep(250); // simulate API latency
-
-      // FRONTEND MOCK (remove when backend is connected)
-      const found = mockParts.find((p) => p.id === id) || null;
-      setPart(found);
-      setLoading(false);
+        const p = json.data;
+        // Normalize backend fields to what the UI expects
+        setPart({
+          id: p._id,
+          name: p.name,
+          brand: p.manufacturer,
+          category: p.category,
+          price: p.price,
+          ratingAvg: p.averageRating,
+          images: p.imageUrl ? [p.imageUrl] : [],
+          specs: p.specifications
+            ? { Specifications: Object.fromEntries(p.specifications) }
+            : {},
+        });
+      } catch (err) {
+        setError("Failed to load part details");
+        setPart(null);
+      } finally {
+        setLoading(false);
+      }
     })();
   }, [id]);
 
@@ -91,7 +84,7 @@ export default function PartDetail() {
           ]}
         />
         <div className="mt-6 rounded-2xl bg-white/5 ring-1 ring-white/10 p-6 text-white/70">
-          Part not found.
+          {error || "Part not found."}
           <div className="mt-4">
             <NavLink className="text-white hover:underline" to="/browse">
               Back to Browse
@@ -190,43 +183,4 @@ export default function PartDetail() {
     </div>
   );
 }
-
-function sleep(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-/**
- * ================= FRONTEND MOCK ONLY =================
- * Remove once backend is connected
- * Images use placeholder URLs (Task 26)
- * =====================================================
- */
-const mockParts = [
-  {
-    id: "cpu-i5-12400f",
-    name: "Intel Core i5-12400F",
-    brand: "Intel",
-    category: "CPU",
-    price: 155,
-    ratingAvg: 4.6,
-    summary: "6C/12T • up to 4.40 GHz • LGA1700",
-    images: [
-      "https://picsum.photos/seed/i5-12400f/900/700",
-      "https://picsum.photos/seed/i5-12400f-2/900/700",
-      "https://picsum.photos/seed/i5-12400f-3/900/700",
-    ],
-    specs: {
-      General: {
-        "Core / Threads": "6 / 12",
-        Socket: "LGA1700",
-        "Boost Clock": "Up to 4.40 GHz",
-      },
-      "Cache & Power": {
-        Cache: "18 MB",
-        TDP: "65W",
-      },
-    },
-  },
-];
-
 

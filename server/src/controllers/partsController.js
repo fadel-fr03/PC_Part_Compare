@@ -23,3 +23,33 @@ exports.getAllParts = async (req, res) => {
     });
   }
 };
+
+/**
+ * @desc    Get single part by ID
+ * @route   GET /api/parts/:id
+ * @access  Public
+ */
+exports.getPartById = async (req, res) => {
+  try {
+    const part = await Part.findById(req.params.id);
+
+    if (!part) {
+      return res.status(404).json({
+        success: false,
+        message: "Part not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: part,
+    });
+  } catch (error) {
+    console.error("Get part by ID error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch part",
+      error: error.message,
+    });
+  }
+};
