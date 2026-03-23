@@ -10,7 +10,7 @@ export const API_ENDPOINTS = {
   parts: {
     list: `${API_URL}/api/parts`,
     byId: (id) => `${API_URL}/api/parts/${id}`,
-    compare: (ids) => `${API_URL}/api/parts/compare?ids=${ids}`,
+   compare: `${API_URL}/api/parts/compare`,
   },
 };
 

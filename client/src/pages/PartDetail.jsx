@@ -18,6 +18,7 @@ export default function PartDetail() {
     (async () => {
       setLoading(true);
       setError(null);
+
       try {
         const res = await fetch(API_ENDPOINTS.parts.byId(id));
         const json = await res.json();
@@ -29,7 +30,7 @@ export default function PartDetail() {
         }
 
         const p = json.data;
-        // Normalize backend fields to what the UI expects
+
         setPart({
           id: p._id,
           name: p.name,
@@ -38,8 +39,11 @@ export default function PartDetail() {
           price: p.price,
           ratingAvg: p.averageRating,
           images: p.imageUrl ? [p.imageUrl] : [],
+          summary: Object.values(p.specifications || {})
+            .slice(0, 3)
+            .join(" • "),
           specs: p.specifications
-            ? { Specifications: Object.fromEntries(p.specifications) }
+            ? { Specifications: { ...p.specifications } }
             : {},
         });
       } catch (err) {
@@ -102,10 +106,8 @@ export default function PartDetail() {
       <Breadcrumbs items={crumbs} />
 
       <div className="mt-6 rounded-2xl bg-white/5 ring-1 ring-white/10 p-6">
-       
         <ImageGallery images={part.images ?? []} alt={part.name} />
 
-       
         <div className="mt-6">
           <div className="flex items-start justify-between gap-4">
             <div>
@@ -134,7 +136,6 @@ export default function PartDetail() {
             </button>
           </div>
 
-          
           <div className="mt-4 flex items-center justify-between">
             <div className="text-white/80 font-semibold">
               {part.price ? `$${part.price}` : "Price N/A"}
@@ -144,14 +145,12 @@ export default function PartDetail() {
             </div>
           </div>
 
-          {/* Summary */}
           {part.summary && (
             <p className="mt-4 text-sm text-white/70 leading-relaxed">
               {part.summary}
             </p>
           )}
 
-          {/* ================= SPECS ================= */}
           <div className="mt-8">
             <h2 className="text-white font-semibold">Specifications</h2>
             <p className="mt-1 text-xs text-white/50">
