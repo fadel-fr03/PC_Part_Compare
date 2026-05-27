@@ -36,7 +36,16 @@ const reviewSchema = new mongoose.Schema(
   }
 );
 
-// One review per user per part
+// ─── Indexes ───────────────────────────────────────────────────────────────────
+
+// Enforces one review per user per part + speeds up duplicate checks
 reviewSchema.index({ user: 1, part: 1 }, { unique: true });
+
+// Speeds up getReviewsByPart queries (the most frequent review lookup)
+reviewSchema.index({ part: 1, createdAt: -1 });
+reviewSchema.index({ part: 1, rating: -1 });
+reviewSchema.index({ part: 1, helpfulCount: -1 });
+
+// ──────────────────────────────────────────────────────────────────────────────
 
 module.exports = mongoose.model("Review", reviewSchema);

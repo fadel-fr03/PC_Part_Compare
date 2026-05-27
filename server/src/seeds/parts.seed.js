@@ -3,204 +3,491 @@ const mongoose = require('mongoose');
 const Part = require('../models/Part');
 const connectDB = require('../config/db');
 
-const sampleParts = [
-  // CPUs
+const parts = [
+  // ─────────────────────────────────────────
+  // CPUs (10)
+  // ─────────────────────────────────────────
   {
     name: "AMD Ryzen 9 7950X",
-    category: "CPU",
-    manufacturer: "AMD",
-    price: 549.99,
-    specifications: {
-      cores: "16",
-      threads: "32",
-      baseClock: "4.5 GHz",
-      boostClock: "5.7 GHz",
-      socket: "AM5",
-      tdp: "170W"
-    },
-    imageUrl: "https://placehold.co/400x300/1a1a2e/00cfff?text=AMD+Ryzen+9+7950X",
-    averageRating: 4.7
+    category: "CPU", manufacturer: "AMD", price: 549.99,
+    specifications: { cores: "16", threads: "32", baseClock: "4.5 GHz", boostClock: "5.7 GHz", socket: "AM5", tdp: "170W", cache: "64MB L3" },
+    imageUrl: "/Media/AMD_Ryzen_9_7950X.jpg",
+    averageRating: 4.8,
   },
   {
-    name: "Intel Core i9-14900K",
-    category: "CPU",
-    manufacturer: "Intel",
-    price: 589.99,
-    specifications: {
-      cores: "24",
-      threads: "32",
-      baseClock: "3.2 GHz",
-      boostClock: "6.0 GHz",
-      socket: "LGA1700",
-      tdp: "125W"
-    },
-    imageUrl: "https://placehold.co/400x300/1a1a2e/00cfff?text=Intel+i9-14900K",
-    averageRating: 4.6
+    name: "AMD Ryzen 9 7900X",
+    category: "CPU", manufacturer: "AMD", price: 379.99,
+    specifications: { cores: "12", threads: "24", baseClock: "4.7 GHz", boostClock: "5.6 GHz", socket: "AM5", tdp: "170W", cache: "64MB L3" },
+    imageUrl: "/Media/AMD_Ryzen_9_7900X.jpg",
+    averageRating: 4.7,
+  },
+  {
+    name: "AMD Ryzen 7 7700X",
+    category: "CPU", manufacturer: "AMD", price: 249.99,
+    specifications: { cores: "8", threads: "16", baseClock: "4.5 GHz", boostClock: "5.4 GHz", socket: "AM5", tdp: "105W", cache: "32MB L3" },
+    imageUrl: "/Media/AMD_Ryzen_7_7700X.jpg",
+    averageRating: 4.6,
   },
   {
     name: "AMD Ryzen 5 7600X",
-    category: "CPU",
-    manufacturer: "AMD",
-    price: 229.99,
-    specifications: {
-      cores: "6",
-      threads: "12",
-      baseClock: "4.7 GHz",
-      boostClock: "5.3 GHz",
-      socket: "AM5",
-      tdp: "105W"
-    },
-    imageUrl: "https://placehold.co/400x300/1a1a2e/00cfff?text=AMD+Ryzen+5+7600X",
-    averageRating: 4.5
+    category: "CPU", manufacturer: "AMD", price: 229.99,
+    specifications: { cores: "6", threads: "12", baseClock: "4.7 GHz", boostClock: "5.3 GHz", socket: "AM5", tdp: "105W", cache: "32MB L3" },
+    imageUrl: "/Media/AMD_Ryzen_5_7600X.jpg",
+    averageRating: 4.5,
+  },
+  {
+    name: "AMD Ryzen 5 5600X",
+    category: "CPU", manufacturer: "AMD", price: 129.99,
+    specifications: { cores: "6", threads: "12", baseClock: "3.7 GHz", boostClock: "4.6 GHz", socket: "AM4", tdp: "65W", cache: "32MB L3" },
+    imageUrl: "/Media/AMD_Ryzen_5_5600X.jpg",
+    averageRating: 4.8,
+  },
+  {
+    name: "Intel Core i9-14900K",
+    category: "CPU", manufacturer: "Intel", price: 549.99,
+    specifications: { cores: "24 (8P+16E)", threads: "32", baseClock: "3.2 GHz", boostClock: "6.0 GHz", socket: "LGA1700", tdp: "125W", cache: "36MB L3" },
+    imageUrl: "/Media/Intel_Core_i9_14900K.jpg",
+    averageRating: 4.6,
+  },
+  {
+    name: "Intel Core i7-14700K",
+    category: "CPU", manufacturer: "Intel", price: 379.99,
+    specifications: { cores: "20 (8P+12E)", threads: "28", baseClock: "3.4 GHz", boostClock: "5.6 GHz", socket: "LGA1700", tdp: "125W", cache: "33MB L3" },
+    imageUrl: "/Media/Intel_Core_i7_14700K.jpg",
+    averageRating: 4.6,
+  },
+  {
+    name: "Intel Core i5-14600K",
+    category: "CPU", manufacturer: "Intel", price: 279.99,
+    specifications: { cores: "14 (6P+8E)", threads: "20", baseClock: "3.5 GHz", boostClock: "5.3 GHz", socket: "LGA1700", tdp: "125W", cache: "24MB L3" },
+    imageUrl: "/Media/Intel_Core_i5_14600K.jpg",
+    averageRating: 4.7,
+  },
+  {
+    name: "Intel Core i5-13400F",
+    category: "CPU", manufacturer: "Intel", price: 179.99,
+    specifications: { cores: "10 (6P+4E)", threads: "16", baseClock: "2.5 GHz", boostClock: "4.6 GHz", socket: "LGA1700", tdp: "65W", cache: "20MB L3" },
+    imageUrl: "/Media/Intel_Core_i5_13400F.jpg",
+    averageRating: 4.6,
+  },
+  {
+    name: "AMD Ryzen 9 7950X3D",
+    category: "CPU", manufacturer: "AMD", price: 649.99,
+    specifications: { cores: "16", threads: "32", baseClock: "4.2 GHz", boostClock: "5.7 GHz", socket: "AM5", tdp: "120W", cache: "128MB L3 (3D V-Cache)" },
+    imageUrl: "/Media/AMD_Ryzen_9_7950X3D.jpg",
+    averageRating: 4.9,
   },
 
-  // GPUs
+  // ─────────────────────────────────────────
+  // GPUs (10)
+  // ─────────────────────────────────────────
   {
     name: "NVIDIA GeForce RTX 4090",
-    category: "GPU",
-    manufacturer: "NVIDIA",
-    price: 1599.99,
-    specifications: {
-      memory: "24GB GDDR6X",
-      coreClock: "2.23 GHz",
-      boostClock: "2.52 GHz",
-      cudaCores: "16384",
-      tdp: "450W"
-    },
-    imageUrl: "https://placehold.co/400x300/1a1a2e/a855f7?text=RTX+4090",
-    averageRating: 4.9
+    category: "GPU", manufacturer: "NVIDIA", price: 1599.99,
+    specifications: { memory: "24GB GDDR6X", coreClock: "2.23 GHz", boostClock: "2.52 GHz", cudaCores: "16384", tdp: "450W", busWidth: "384-bit" },
+    imageUrl: "/Media/NVIDIA_GeForce_RTX_4090.jpg",
+    averageRating: 4.9,
   },
   {
-    name: "AMD Radeon RX 7900 XTX",
-    category: "GPU",
-    manufacturer: "AMD",
-    price: 999.99,
-    specifications: {
-      memory: "24GB GDDR6",
-      gameClock: "2.3 GHz",
-      boostClock: "2.5 GHz",
-      streamProcessors: "6144",
-      tdp: "355W"
-    },
-    imageUrl: "https://placehold.co/400x300/1a1a2e/a855f7?text=RX+7900+XTX",
-    averageRating: 4.6
+    name: "NVIDIA GeForce RTX 4080 Super",
+    category: "GPU", manufacturer: "NVIDIA", price: 999.99,
+    specifications: { memory: "16GB GDDR6X", coreClock: "2.21 GHz", boostClock: "2.55 GHz", cudaCores: "10240", tdp: "320W", busWidth: "256-bit" },
+    imageUrl: "/Media/NVIDIA_GeForce_RTX_4080_Super.jpg",
+    averageRating: 4.7,
+  },
+  {
+    name: "NVIDIA GeForce RTX 4070 Ti Super",
+    category: "GPU", manufacturer: "NVIDIA", price: 799.99,
+    specifications: { memory: "16GB GDDR6X", coreClock: "2.34 GHz", boostClock: "2.61 GHz", cudaCores: "8448", tdp: "285W", busWidth: "256-bit" },
+    imageUrl: "/Media/NVIDIA_GeForce_RTX_4070_Ti_Super.jpg",
+    averageRating: 4.7,
+  },
+  {
+    name: "NVIDIA GeForce RTX 4070 Super",
+    category: "GPU", manufacturer: "NVIDIA", price: 599.99,
+    specifications: { memory: "12GB GDDR6X", coreClock: "1.98 GHz", boostClock: "2.48 GHz", cudaCores: "7168", tdp: "220W", busWidth: "192-bit" },
+    imageUrl: "/Media/NVIDIA_GeForce_RTX_4070_Super.jpg",
+    averageRating: 4.6,
   },
   {
     name: "NVIDIA GeForce RTX 4070",
-    category: "GPU",
-    manufacturer: "NVIDIA",
-    price: 549.99,
-    specifications: {
-      memory: "12GB GDDR6X",
-      coreClock: "1.92 GHz",
-      boostClock: "2.48 GHz",
-      cudaCores: "5888",
-      tdp: "200W"
-    },
-    imageUrl: "https://placehold.co/400x300/1a1a2e/a855f7?text=RTX+4070",
-    averageRating: 4.7
+    category: "GPU", manufacturer: "NVIDIA", price: 549.99,
+    specifications: { memory: "12GB GDDR6X", coreClock: "1.92 GHz", boostClock: "2.48 GHz", cudaCores: "5888", tdp: "200W", busWidth: "192-bit" },
+    imageUrl: "/Media/NVIDIA_GeForce_RTX_4070.jpg",
+    averageRating: 4.5,
+  },
+  {
+    name: "NVIDIA GeForce RTX 4060 Ti",
+    category: "GPU", manufacturer: "NVIDIA", price: 399.99,
+    specifications: { memory: "16GB GDDR6", coreClock: "2.31 GHz", boostClock: "2.54 GHz", cudaCores: "4352", tdp: "165W", busWidth: "128-bit" },
+    imageUrl: "/Media/NVIDIA_GeForce_RTX_4060_Ti.jpg",
+    averageRating: 4.3,
+  },
+  {
+    name: "AMD Radeon RX 7900 XTX",
+    category: "GPU", manufacturer: "AMD", price: 949.99,
+    specifications: { memory: "24GB GDDR6", gameClock: "2.3 GHz", boostClock: "2.5 GHz", streamProcessors: "6144", tdp: "355W", busWidth: "384-bit" },
+    imageUrl: "/Media/AMD_Radeon_RX_7900_XTX.jpg",
+    averageRating: 4.6,
+  },
+  {
+    name: "AMD Radeon RX 7900 XT",
+    category: "GPU", manufacturer: "AMD", price: 749.99,
+    specifications: { memory: "20GB GDDR6", gameClock: "2.0 GHz", boostClock: "2.4 GHz", streamProcessors: "5376", tdp: "315W", busWidth: "320-bit" },
+    imageUrl: "/Media/AMD_Radeon_RX_7900_XT.avif",
+    averageRating: 4.5,
+  },
+  {
+    name: "AMD Radeon RX 7800 XT",
+    category: "GPU", manufacturer: "AMD", price: 449.99,
+    specifications: { memory: "16GB GDDR6", gameClock: "1.9 GHz", boostClock: "2.43 GHz", streamProcessors: "3840", tdp: "263W", busWidth: "256-bit" },
+    imageUrl: "/Media/AMD_Radeon_RX_7800_XT.webp",
+    averageRating: 4.5,
+  },
+  {
+    name: "AMD Radeon RX 7600",
+    category: "GPU", manufacturer: "AMD", price: 269.99,
+    specifications: { memory: "8GB GDDR6", gameClock: "2.25 GHz", boostClock: "2.655 GHz", streamProcessors: "2048", tdp: "165W", busWidth: "128-bit" },
+    imageUrl: "/Media/AMD_Radeon_RX_7600.png",
+    averageRating: 4.3,
   },
 
-  // RAM
+  // ─────────────────────────────────────────
+  // RAM (8)
+  // ─────────────────────────────────────────
   {
-    name: "Corsair Vengeance DDR5 32GB",
-    category: "RAM",
-    manufacturer: "Corsair",
-    price: 129.99,
-    specifications: {
-      capacity: "32GB",
-      type: "DDR5",
-      speed: "6000 MHz",
-      cas: "CL36",
-      modules: "2x16GB",
-      voltage: "1.35V"
-    },
-    imageUrl: "https://placehold.co/400x300/1a1a2e/34d399?text=Corsair+DDR5+32GB",
-    averageRating: 4.8
+    name: "Corsair Vengeance DDR5-6000 32GB",
+    category: "RAM", manufacturer: "Corsair", price: 109.99,
+    specifications: { capacity: "32GB", type: "DDR5", speed: "6000 MHz", cas: "CL36", modules: "2x16GB", voltage: "1.35V" },
+    imageUrl: "/Media/Corsair_Vengeance_DDR5_6000_32GB.avif",
+    averageRating: 4.7,
   },
   {
-    name: "G.Skill Trident Z5 RGB 64GB",
-    category: "RAM",
-    manufacturer: "G.Skill",
-    price: 249.99,
-    specifications: {
-      capacity: "64GB",
-      type: "DDR5",
-      speed: "6400 MHz",
-      cas: "CL32",
-      modules: "2x32GB",
-      voltage: "1.4V"
-    },
-    imageUrl: "https://placehold.co/400x300/1a1a2e/34d399?text=G.Skill+Trident+Z5",
-    averageRating: 4.7
+    name: "G.Skill Trident Z5 RGB DDR5-6400 32GB",
+    category: "RAM", manufacturer: "G.Skill", price: 139.99,
+    specifications: { capacity: "32GB", type: "DDR5", speed: "6400 MHz", cas: "CL32", modules: "2x16GB", voltage: "1.4V" },
+    imageUrl: "/Media/G_Skill_Trident_Z5_RGB_DDR5_6400_32GB.jpg",
+    averageRating: 4.8,
+  },
+  {
+    name: "G.Skill Trident Z5 RGB DDR5-6400 64GB",
+    category: "RAM", manufacturer: "G.Skill", price: 249.99,
+    specifications: { capacity: "64GB", type: "DDR5", speed: "6400 MHz", cas: "CL32", modules: "2x32GB", voltage: "1.4V" },
+    imageUrl: "/Media/G_Skill_Trident_Z5_RGB_DDR5_6400_64GB.webp",
+    averageRating: 4.7,
+  },
+  {
+    name: "Kingston Fury Beast DDR5-5200 32GB",
+    category: "RAM", manufacturer: "Kingston", price: 89.99,
+    specifications: { capacity: "32GB", type: "DDR5", speed: "5200 MHz", cas: "CL40", modules: "2x16GB", voltage: "1.25V" },
+    imageUrl: "/Media/Kingston_Fury_Beast_DDR5_5200_32GB.jpg",
+    averageRating: 4.5,
+  },
+  {
+    name: "Corsair Vengeance LPX DDR4-3200 16GB",
+    category: "RAM", manufacturer: "Corsair", price: 44.99,
+    specifications: { capacity: "16GB", type: "DDR4", speed: "3200 MHz", cas: "CL16", modules: "2x8GB", voltage: "1.35V" },
+    imageUrl: "/Media/Corsair_Vengeance_LPX_DDR4_3200_16GB.jpg",
+    averageRating: 4.8,
+  },
+  {
+    name: "G.Skill Ripjaws V DDR4-3600 32GB",
+    category: "RAM", manufacturer: "G.Skill", price: 69.99,
+    specifications: { capacity: "32GB", type: "DDR4", speed: "3600 MHz", cas: "CL18", modules: "2x16GB", voltage: "1.35V" },
+    imageUrl: "/Media/G_Skill_Ripjaws_V_DDR4_3600_32GB.jpg",
+    averageRating: 4.7,
+  },
+  {
+    name: "Crucial Pro DDR5-5600 32GB",
+    category: "RAM", manufacturer: "Crucial", price: 84.99,
+    specifications: { capacity: "32GB", type: "DDR5", speed: "5600 MHz", cas: "CL46", modules: "2x16GB", voltage: "1.1V" },
+    imageUrl: "/Media/Crucial_Pro_DDR5_5600_32GB.jpg",
+    averageRating: 4.5,
+  },
+  {
+    name: "TeamGroup T-Force Delta RGB DDR5-6000 32GB",
+    category: "RAM", manufacturer: "TeamGroup", price: 99.99,
+    specifications: { capacity: "32GB", type: "DDR5", speed: "6000 MHz", cas: "CL38", modules: "2x16GB", voltage: "1.35V" },
+    imageUrl: "/Media/TeamGroup_T_Force_Delta_RGB_DDR5_6000_32GB.jpg",
+    averageRating: 4.6,
   },
 
-  // Storage
+  // ─────────────────────────────────────────
+  // Motherboards (8)
+  // ─────────────────────────────────────────
   {
-    name: "Samsung 990 PRO 2TB NVMe SSD",
-    category: "Storage",
-    manufacturer: "Samsung",
-    price: 179.99,
-    specifications: {
-      capacity: "2TB",
-      interface: "PCIe 4.0 x4",
-      formFactor: "M.2 2280",
-      readSpeed: "7450 MB/s",
-      writeSpeed: "6900 MB/s",
-      type: "NVMe SSD"
-    },
-    imageUrl: "https://placehold.co/400x300/1a1a2e/f59e0b?text=Samsung+990+PRO+2TB",
-    averageRating: 4.9
+    name: "ASUS ROG STRIX X670E-E Gaming WiFi",
+    category: "Motherboard", manufacturer: "ASUS", price: 449.99,
+    specifications: { socket: "AM5", chipset: "X670E", formFactor: "ATX", memorySlots: "4", maxMemory: "128GB DDR5", pcie: "PCIe 5.0" },
+    imageUrl: "/Media/ASUS_ROG_STRIX_X670E-E_Gaming_WiFi.jpg",
+    averageRating: 4.8,
+  },
+  {
+    name: "MSI MEG X670E ACE",
+    category: "Motherboard", manufacturer: "MSI", price: 499.99,
+    specifications: { socket: "AM5", chipset: "X670E", formFactor: "E-ATX", memorySlots: "4", maxMemory: "192GB DDR5", pcie: "PCIe 5.0" },
+    imageUrl: "/Media/MSI_MEG_X670E_ACE.png",
+    averageRating: 4.7,
+  },
+  {
+    name: "Gigabyte X670 AORUS Elite AX",
+    category: "Motherboard", manufacturer: "Gigabyte", price: 259.99,
+    specifications: { socket: "AM5", chipset: "X670", formFactor: "ATX", memorySlots: "4", maxMemory: "128GB DDR5", pcie: "PCIe 5.0" },
+    imageUrl: "/Media/Gigabyte_X670_AORUS_Elite_AX.jpg",
+    averageRating: 4.6,
+  },
+  {
+    name: "ASUS ProArt X670E-Creator WiFi",
+    category: "Motherboard", manufacturer: "ASUS", price: 399.99,
+    specifications: { socket: "AM5", chipset: "X670E", formFactor: "ATX", memorySlots: "4", maxMemory: "128GB DDR5", pcie: "PCIe 5.0" },
+    imageUrl: "/Media/ASUS_ProArt_X670E-Creator_WiFi.jpg",
+    averageRating: 4.7,
+  },
+  {
+    name: "MSI MAG B650 TOMAHAWK WiFi",
+    category: "Motherboard", manufacturer: "MSI", price: 189.99,
+    specifications: { socket: "AM5", chipset: "B650", formFactor: "ATX", memorySlots: "4", maxMemory: "128GB DDR5", pcie: "PCIe 4.0" },
+    imageUrl: "/Media/MSI_MAG_B650_TOMAHAWK_WiFi.jpg",
+    averageRating: 4.7,
+  },
+  {
+    name: "ASUS ROG MAXIMUS Z790 HERO",
+    category: "Motherboard", manufacturer: "ASUS", price: 599.99,
+    specifications: { socket: "LGA1700", chipset: "Z790", formFactor: "ATX", memorySlots: "4", maxMemory: "128GB DDR5", pcie: "PCIe 5.0" },
+    imageUrl: "/Media/ASUS_ROG_MAXIMUS_Z790_HERO.jpg",
+    averageRating: 4.8,
+  },
+  {
+    name: "Gigabyte Z790 AORUS Master",
+    category: "Motherboard", manufacturer: "Gigabyte", price: 399.99,
+    specifications: { socket: "LGA1700", chipset: "Z790", formFactor: "E-ATX", memorySlots: "4", maxMemory: "128GB DDR5", pcie: "PCIe 5.0" },
+    imageUrl: "/Media/Gigabyte_Z790_AORUS_Master.png",
+    averageRating: 4.7,
+  },
+  {
+    name: "MSI PRO B760M-A WiFi",
+    category: "Motherboard", manufacturer: "MSI", price: 129.99,
+    specifications: { socket: "LGA1700", chipset: "B760", formFactor: "mATX", memorySlots: "4", maxMemory: "128GB DDR4/DDR5", pcie: "PCIe 5.0" },
+    imageUrl: "/Media/MSI_PRO_B760M-A_WiFi.jpg",
+    averageRating: 4.5,
   },
 
-  // Motherboard
+  // ─────────────────────────────────────────
+  // Storage (8)
+  // ─────────────────────────────────────────
   {
-    name: "ASUS ROG STRIX X670E-E",
-    category: "Motherboard",
-    manufacturer: "ASUS",
-    price: 449.99,
-    specifications: {
-      socket: "AM5",
-      chipset: "X670E",
-      formFactor: "ATX",
-      memorySlots: "4",
-      maxMemory: "128GB",
-      pcie: "PCIe 5.0"
-    },
-    imageUrl: "https://placehold.co/400x300/1a1a2e/fb923c?text=ASUS+ROG+X670E",
-    averageRating: 4.8
-  }
+    name: "Samsung 990 Pro 2TB NVMe SSD",
+    category: "Storage", manufacturer: "Samsung", price: 169.99,
+    specifications: { capacity: "2TB", interface: "PCIe 4.0 x4", formFactor: "M.2 2280", readSpeed: "7450 MB/s", writeSpeed: "6900 MB/s", type: "NVMe SSD" },
+    imageUrl: "/Media/Samsung_990_Pro_2TB_NVMe_SSD.avif",
+    averageRating: 4.9,
+  },
+  {
+    name: "Samsung 990 Pro 1TB NVMe SSD",
+    category: "Storage", manufacturer: "Samsung", price: 99.99,
+    specifications: { capacity: "1TB", interface: "PCIe 4.0 x4", formFactor: "M.2 2280", readSpeed: "7450 MB/s", writeSpeed: "6900 MB/s", type: "NVMe SSD" },
+    imageUrl: "/Media/Samsung_990_Pro_1TB_NVMe_SSD.webp",
+    averageRating: 4.8,
+  },
+  {
+    name: "WD Black SN850X 2TB NVMe SSD",
+    category: "Storage", manufacturer: "Western Digital", price: 149.99,
+    specifications: { capacity: "2TB", interface: "PCIe 4.0 x4", formFactor: "M.2 2280", readSpeed: "7300 MB/s", writeSpeed: "6600 MB/s", type: "NVMe SSD" },
+    imageUrl: "/Media/WD_Black_SN850X_2TB_NVMe_SSD.avif",
+    averageRating: 4.8,
+  },
+  {
+    name: "Seagate FireCuda 530 2TB NVMe SSD",
+    category: "Storage", manufacturer: "Seagate", price: 144.99,
+    specifications: { capacity: "2TB", interface: "PCIe 4.0 x4", formFactor: "M.2 2280", readSpeed: "7300 MB/s", writeSpeed: "6900 MB/s", type: "NVMe SSD" },
+    imageUrl: "/Media/Seagate_FireCuda_530_2TB_NVMe_SSD.jpg",
+    averageRating: 4.7,
+  },
+  {
+    name: "Crucial T700 2TB PCIe 5.0 NVMe SSD",
+    category: "Storage", manufacturer: "Crucial", price: 199.99,
+    specifications: { capacity: "2TB", interface: "PCIe 5.0 x4", formFactor: "M.2 2280", readSpeed: "12400 MB/s", writeSpeed: "11800 MB/s", type: "NVMe SSD" },
+    imageUrl: "/Media/Crucial_T700_2TB_PCIe_5.0_NVMe_SSD.png",
+    averageRating: 4.7,
+  },
+  {
+    name: "Samsung 870 EVO 4TB SATA SSD",
+    category: "Storage", manufacturer: "Samsung", price: 299.99,
+    specifications: { capacity: "4TB", interface: "SATA III", formFactor: "2.5-inch", readSpeed: "560 MB/s", writeSpeed: "530 MB/s", type: "SATA SSD" },
+    imageUrl: "/Media/Samsung_870_EVO_4TB_SATA_SSD.webp",
+    averageRating: 4.8,
+  },
+  {
+    name: "Seagate Barracuda 8TB HDD",
+    category: "Storage", manufacturer: "Seagate", price: 119.99,
+    specifications: { capacity: "8TB", interface: "SATA III", formFactor: "3.5-inch", rpm: "5400 RPM", cache: "256MB", type: "HDD" },
+    imageUrl: "/Media/Seagate_Barracuda_8TB_HDD.avif",
+    averageRating: 4.4,
+  },
+  {
+    name: "WD Blue SN580 1TB NVMe SSD",
+    category: "Storage", manufacturer: "Western Digital", price: 64.99,
+    specifications: { capacity: "1TB", interface: "PCIe 4.0 x4", formFactor: "M.2 2280", readSpeed: "4150 MB/s", writeSpeed: "4150 MB/s", type: "NVMe SSD" },
+    imageUrl: "/Media/WD_Blue_SN580_1TB_NVMe_SSD.webp",
+    averageRating: 4.6,
+  },
+
+  // ─────────────────────────────────────────
+  // PSU (6)
+  // ─────────────────────────────────────────
+  {
+    name: "Corsair RM1000x 1000W 80+ Gold",
+    category: "PSU", manufacturer: "Corsair", price: 179.99,
+    specifications: { wattage: "1000W", efficiency: "80+ Gold", modular: "Fully Modular", formFactor: "ATX", fanSize: "135mm", warranty: "10 years" },
+    imageUrl: "/Media/Corsair_RM1000x_1000W_80+_Gold.png",
+    averageRating: 4.8,
+  },
+  {
+    name: "Seasonic Focus GX-850 850W 80+ Gold",
+    category: "PSU", manufacturer: "Seasonic", price: 139.99,
+    specifications: { wattage: "850W", efficiency: "80+ Gold", modular: "Fully Modular", formFactor: "ATX", fanSize: "120mm", warranty: "10 years" },
+    imageUrl: "/Media/Seasonic_Focus_GX-850_850W_80+_Gold.webp",
+    averageRating: 4.9,
+  },
+  {
+    name: "EVGA SuperNOVA 1000 G6 1000W 80+ Gold",
+    category: "PSU", manufacturer: "EVGA", price: 159.99,
+    specifications: { wattage: "1000W", efficiency: "80+ Gold", modular: "Fully Modular", formFactor: "ATX", fanSize: "135mm", warranty: "10 years" },
+    imageUrl: "/Media/EVGA_SuperNOVA_1000_G6_1000W_80+_Gold.jpg",
+    averageRating: 4.7,
+  },
+  {
+    name: "be quiet! Dark Power 13 1000W 80+ Titanium",
+    category: "PSU", manufacturer: "be quiet!", price: 259.99,
+    specifications: { wattage: "1000W", efficiency: "80+ Titanium", modular: "Fully Modular", formFactor: "ATX", fanSize: "135mm", warranty: "10 years" },
+    imageUrl: "/Media/be_quiet!_Dark_Power_13_1000W_80+_Titanium.jpg",
+    averageRating: 4.8,
+  },
+  {
+    name: "Corsair CX750M 750W 80+ Bronze",
+    category: "PSU", manufacturer: "Corsair", price: 79.99,
+    specifications: { wattage: "750W", efficiency: "80+ Bronze", modular: "Semi-Modular", formFactor: "ATX", fanSize: "120mm", warranty: "5 years" },
+    imageUrl: "/Media/Corsair_CX750M_750W_80+_Bronze.webp",
+    averageRating: 4.4,
+  },
+  {
+    name: "Seasonic Prime TX-1000 1000W 80+ Titanium",
+    category: "PSU", manufacturer: "Seasonic", price: 289.99,
+    specifications: { wattage: "1000W", efficiency: "80+ Titanium", modular: "Fully Modular", formFactor: "ATX", fanSize: "135mm", warranty: "12 years" },
+    imageUrl: "/Media/Seasonic_Prime_TX-1000_1000W_80+_Titanium.jpg",
+    averageRating: 4.9,
+  },
+
+  // ─────────────────────────────────────────
+  // Cases (5)
+  // ─────────────────────────────────────────
+  {
+    name: "Lian Li PC-O11 Dynamic EVO",
+    category: "Case", manufacturer: "Lian Li", price: 169.99,
+    specifications: { formFactor: "Mid Tower", compatibleMobo: "E-ATX/ATX/mATX/ITX", maxGpuLength: "420mm", maxCpuCoolerHeight: "167mm", driveBays: "2x 2.5\", 4x 3.5\"", frontPanel: "USB-A, USB-C" },
+    imageUrl: "/Media/Lian_Li_PC-O11_Dynamic_EVO.jpg",
+    averageRating: 4.9,
+  },
+  {
+    name: "Fractal Design Torrent",
+    category: "Case", manufacturer: "Fractal Design", price: 189.99,
+    specifications: { formFactor: "Mid Tower", compatibleMobo: "E-ATX/ATX/mATX/ITX", maxGpuLength: "461mm", maxCpuCoolerHeight: "188mm", driveBays: "2x 2.5\", 4x 3.5\"", frontPanel: "USB-A, USB-C" },
+    imageUrl: "/Media/Fractal_Design_Torrent.jpg",
+    averageRating: 4.8,
+  },
+  {
+    name: "Corsair 5000D Airflow",
+    category: "Case", manufacturer: "Corsair", price: 154.99,
+    specifications: { formFactor: "Mid Tower", compatibleMobo: "ATX/mATX/ITX", maxGpuLength: "420mm", maxCpuCoolerHeight: "170mm", driveBays: "2x 2.5\", 2x 3.5\"", frontPanel: "USB-A, USB-C" },
+    imageUrl: "/Media/Corsair_5000D_Airflow.png",
+    averageRating: 4.7,
+  },
+  {
+    name: "NZXT H9 Flow",
+    category: "Case", manufacturer: "NZXT", price: 149.99,
+    specifications: { formFactor: "Mid Tower", compatibleMobo: "ATX/mATX/ITX", maxGpuLength: "435mm", maxCpuCoolerHeight: "185mm", driveBays: "4x 2.5\", 2x 3.5\"", frontPanel: "USB-A, USB-C" },
+    imageUrl: "/Media/NZXT_H9_Flow.jpg",
+    averageRating: 4.7,
+  },
+  {
+    name: "Phanteks Enthoo Pro 2 Server Edition",
+    category: "Case", manufacturer: "Phanteks", price: 219.99,
+    specifications: { formFactor: "Full Tower", compatibleMobo: "E-ATX/ATX/mATX/ITX", maxGpuLength: "503mm", maxCpuCoolerHeight: "220mm", driveBays: "4x 2.5\", 8x 3.5\"", frontPanel: "USB-A x3, USB-C" },
+    imageUrl: "/Media/Phanteks_Enthoo_Pro_2_Server_Edition.webp",
+    averageRating: 4.7,
+  },
+
+  // ─────────────────────────────────────────
+  // Cooling (6)
+  // ─────────────────────────────────────────
+  {
+    name: "Noctua NH-D15",
+    category: "Cooling", manufacturer: "Noctua", price: 99.99,
+    specifications: { type: "Air Cooler", fanSize: "2x 140mm", tdpSupport: "250W+", height: "165mm", sockets: "AM4, AM5, LGA1700, LGA1200", noiseLevel: "24.6 dBA" },
+    imageUrl: "/Media/Noctua_NH-D15.avif",
+    averageRating: 4.9,
+  },
+  {
+    name: "be quiet! Dark Rock Pro 4",
+    category: "Cooling", manufacturer: "be quiet!", price: 89.99,
+    specifications: { type: "Air Cooler", fanSize: "2x 135mm", tdpSupport: "250W", height: "163mm", sockets: "AM4, AM5, LGA1700, LGA1200", noiseLevel: "24.3 dBA" },
+    imageUrl: "/Media/be_quiet!_Dark_Rock_Pro_4.jpg",
+    averageRating: 4.8,
+  },
+  {
+    name: "ARCTIC Liquid Freezer III 360",
+    category: "Cooling", manufacturer: "ARCTIC", price: 109.99,
+    specifications: { type: "AIO Liquid Cooler", radiatorSize: "360mm", fans: "3x 120mm", tdpSupport: "300W+", sockets: "AM4, AM5, LGA1700, LGA1200", noiseLevel: "22.5 dBA" },
+    imageUrl: "/Media/ARCTIC_Liquid_Freezer_III_360.webp",
+    averageRating: 4.8,
+  },
+  {
+    name: "Corsair iCUE H150i Elite LCD XT",
+    category: "Cooling", manufacturer: "Corsair", price: 219.99,
+    specifications: { type: "AIO Liquid Cooler", radiatorSize: "360mm", fans: "3x 120mm", tdpSupport: "300W+", sockets: "AM4, AM5, LGA1700, LGA1200", display: "2.1\" LCD" },
+    imageUrl: "/Media/Corsair_iCUE_H150i_Elite_LCD_XT.webp",
+    averageRating: 4.7,
+  },
+  {
+    name: "DeepCool LT720 360mm AIO",
+    category: "Cooling", manufacturer: "DeepCool", price: 139.99,
+    specifications: { type: "AIO Liquid Cooler", radiatorSize: "360mm", fans: "3x 120mm", tdpSupport: "300W+", sockets: "AM4, AM5, LGA1700, LGA1200", noiseLevel: "26.1 dBA" },
+    imageUrl: "/Media/DeepCool_LT720_360mm_AIO.webp",
+    averageRating: 4.7,
+  },
+  {
+    name: "Thermalright Peerless Assassin 120 SE",
+    category: "Cooling", manufacturer: "Thermalright", price: 35.99,
+    specifications: { type: "Air Cooler", fanSize: "2x 120mm", tdpSupport: "240W", height: "155mm", sockets: "AM4, AM5, LGA1700, LGA1200", noiseLevel: "25.6 dBA" },
+    imageUrl: "/Media/Thermalright_Peerless_Assassin_120_SE.jpg",
+    averageRating: 4.9,
+  },
 ];
 
 const seedParts = async () => {
   try {
-    // Connect to MongoDB
     await connectDB();
-
-    // Clear existing parts
     await Part.deleteMany({});
-    console.log('🗑️  Cleared existing parts from database');
+    console.log('🗑️  Cleared existing parts');
 
-    // Insert sample parts
-    const insertedParts = await Part.insertMany(sampleParts);
-    console.log(`✅ Successfully seeded ${insertedParts.length} parts to database`);
+    const inserted = await Part.insertMany(parts);
+    console.log(`✅ Seeded ${inserted.length} parts\n`);
 
-    // Display summary
-    console.log('\n📊 Seeded Parts Summary:');
-    const summary = insertedParts.reduce((acc, part) => {
-      acc[part.category] = (acc[part.category] || 0) + 1;
+    const summary = inserted.reduce((acc, p) => {
+      acc[p.category] = (acc[p.category] || 0) + 1;
       return acc;
     }, {});
-    Object.entries(summary).forEach(([category, count]) => {
-      console.log(`   - ${category}: ${count}`);
-    });
+
+    console.log('📊 Parts by category:');
+    Object.entries(summary)
+      .sort((a, b) => b[1] - a[1])
+      .forEach(([cat, count]) => console.log(`   ${cat.padEnd(14)} ${count}`));
 
     process.exit(0);
-  } catch (error) {
-    console.error('❌ Error seeding database:', error.message);
+  } catch (err) {
+    console.error('❌ Seed error:', err.message);
     process.exit(1);
   }
 };
 
-// Run the seed function
 seedParts();

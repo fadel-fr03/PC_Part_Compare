@@ -43,4 +43,22 @@ const partSchema = new mongoose.Schema(
   }
 );
 
+// ─── Indexes ───────────────────────────────────────────────────────────────────
+
+// Primary filter fields used in getAllParts (category, manufacturer, price range)
+partSchema.index({ category: 1 });
+partSchema.index({ manufacturer: 1 });
+partSchema.index({ price: 1 });
+partSchema.index({ averageRating: -1 });
+
+// Compound index covers the most common query pattern:
+// filter by category + sort by price or rating
+partSchema.index({ category: 1, price: 1 });
+partSchema.index({ category: 1, averageRating: -1 });
+
+// Full-text search on name and manufacturer (used by the search param)
+partSchema.index({ name: "text", manufacturer: "text" });
+
+// ──────────────────────────────────────────────────────────────────────────────
+
 module.exports = mongoose.model("Part", partSchema);

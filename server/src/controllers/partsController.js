@@ -1,18 +1,28 @@
+const mongoose = require("mongoose");
 const { Part } = require("../models");
 
 /**
- * @desc    Get all parts with optional filtering/search
+ * @desc    Get all parts with optional filtering, search, sorting, pagination
  * @route   GET /api/parts
  * @access  Public
  */
 exports.getAllParts = async (req, res) => {
   try {
-    const { category, search, minPrice, maxPrice, manufacturer, sort } = req.query;
+    const {
+      category,
+      search,
+      minPrice,
+      maxPrice,
+      manufacturer,
+      sort,
+      page = 1,
+      limit = 20,
+    } = req.query;
 
     const filter = {};
 
     if (category && category !== "All") {
-      filter.category = category;
+      filter.category = category; // exact match — hits the category index
     }
 
     if (manufacturer) {
@@ -20,52 +30,50 @@ exports.getAllParts = async (req, res) => {
     }
 
     if (search) {
-      filter.$or = [
-        { name: { $regex: search, $options: "i" } },
-        { manufacturer: { $regex: search, $options: "i" } },
-      ];
+      // Use the text index when a search term is present for better performance;
+      // fall back to regex if the text index is unavailable.
+      filter.$text = { $search: search };
     }
 
-    if (minPrice || maxPrice) {
+    if (minPrice !== undefined && minPrice !== "" ||
+        maxPrice !== undefined && maxPrice !== "") {
       filter.price = {};
-      if (minPrice !== undefined && minPrice !== "") {
-        filter.price.$gte = Number(minPrice);
-      }
-      if (maxPrice !== undefined && maxPrice !== "") {
-        filter.price.$lte = Number(maxPrice);
-      }
+      if (minPrice !== undefined && minPrice !== "") filter.price.$gte = Number(minPrice);
+      if (maxPrice !== undefined && maxPrice !== "") filter.price.$lte = Number(maxPrice);
     }
 
-    let query = Part.find(filter);
+    // Build sort
+    const sortMap = {
+      price_asc:    { price: 1 },
+      price_desc:   { price: -1 },
+      rating_desc:  { averageRating: -1 },
+      rating_asc:   { averageRating: 1 },
+      name_asc:     { name: 1 },
+      name_desc:    { name: -1 },
+    };
+    const sortOption = sortMap[sort] || { createdAt: -1 };
 
-    switch (sort) {
-      case "price_asc":
-        query = query.sort({ price: 1 });
-        break;
-      case "price_desc":
-        query = query.sort({ price: -1 });
-        break;
-      case "rating_desc":
-        query = query.sort({ averageRating: -1 });
-        break;
-      case "rating_asc":
-        query = query.sort({ averageRating: 1 });
-        break;
-      case "name_asc":
-        query = query.sort({ name: 1 });
-        break;
-      case "name_desc":
-        query = query.sort({ name: -1 });
-        break;
-      default:
-        query = query.sort({ createdAt: -1 });
-    }
+    // Pagination
+    const pageNum  = Math.max(1, parseInt(page, 10));
+    const limitNum = Math.min(100, Math.max(1, parseInt(limit, 10)));
+    const skip     = (pageNum - 1) * limitNum;
 
-    const parts = await query;
+    // Run count and data fetch in parallel
+    const [total, parts] = await Promise.all([
+      Part.countDocuments(filter),
+      Part.find(filter)
+          .sort(sortOption)
+          .skip(skip)
+          .limit(limitNum)
+          .lean(),    // .lean() returns plain JS objects — ~2× faster, less memory
+    ]);
 
     res.status(200).json({
       success: true,
       count: parts.length,
+      total,
+      page: pageNum,
+      totalPages: Math.ceil(total / limitNum),
       data: parts,
     });
   } catch (error) {
@@ -85,19 +93,18 @@ exports.getAllParts = async (req, res) => {
  */
 exports.getPartById = async (req, res) => {
   try {
-    const part = await Part.findById(req.params.id);
-
-    if (!part) {
-      return res.status(404).json({
-        success: false,
-        message: "Part not found",
-      });
+    // Validate ObjectId before hitting the DB
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ success: false, message: "Invalid part ID" });
     }
 
-    res.status(200).json({
-      success: true,
-      data: part,
-    });
+    const part = await Part.findById(req.params.id).lean();
+
+    if (!part) {
+      return res.status(404).json({ success: false, message: "Part not found" });
+    }
+
+    res.status(200).json({ success: true, data: part });
   } catch (error) {
     console.error("Get part by ID error:", error);
     res.status(500).json({
@@ -109,9 +116,9 @@ exports.getPartById = async (req, res) => {
 };
 
 /**
- * @desc    Compare 2 to 3 parts by IDs
+ * @desc    Compare 2–3 parts by IDs
  * @route   GET /api/parts/compare?ids=id1,id2,id3
- * @route   POST /api/parts/compare
+ * @route   POST /api/parts/compare { ids: [...] }
  * @access  Public
  */
 exports.compareParts = async (req, res) => {
@@ -119,10 +126,7 @@ exports.compareParts = async (req, res) => {
     let ids = [];
 
     if (req.method === "GET") {
-      ids = (req.query.ids || "")
-        .split(",")
-        .map((id) => id.trim())
-        .filter(Boolean);
+      ids = (req.query.ids || "").split(",").map((id) => id.trim()).filter(Boolean);
     } else if (req.method === "POST") {
       ids = Array.isArray(req.body.ids) ? req.body.ids : [];
     }
@@ -134,7 +138,13 @@ exports.compareParts = async (req, res) => {
       });
     }
 
-    const parts = await Part.find({ _id: { $in: ids } });
+    // Validate all IDs before querying
+    const invalidId = ids.find((id) => !mongoose.Types.ObjectId.isValid(id));
+    if (invalidId) {
+      return res.status(400).json({ success: false, message: `Invalid ID: ${invalidId}` });
+    }
+
+    const parts = await Part.find({ _id: { $in: ids } }).lean();
 
     if (parts.length !== ids.length) {
       return res.status(404).json({
@@ -151,9 +161,9 @@ exports.compareParts = async (req, res) => {
       });
     }
 
-    // keep same order as incoming ids
+    // Preserve caller's ordering
     const orderedParts = ids
-      .map((id) => parts.find((p) => p._id.toString() === id.toString()))
+      .map((id) => parts.find((p) => p._id.toString() === id))
       .filter(Boolean);
 
     res.status(200).json({
