@@ -1,0 +1,62 @@
+[
+  {
+    "_id": "69e8186824add487d237f0ac",
+    "username": "hazar",
+    "email": "h@gmail.com",
+    "password": "$2b$10$4QLLVTYuD9V3FoBHfR5CSujjhJrIg4ktftvPtifa0W7V/6GWSoY7i",
+    "role": "admin",
+    "createdAt": "2026-04-22T00:38:01.001Z",
+    "updatedAt": "2026-04-23T21:25:14.699Z",
+    "__v": 0
+  },
+  {
+    "_id": "69e8bf37a8bc0f4700a0c5ca",
+    "username": "farah",
+    "email": "f@gmail.com",
+    "password": "$2b$10$lGuqUi5jS.bfcBOenJg07.LqmeF.5zI13AIfgROzUU3N2wLWt2ga6",
+    "role": "user",
+    "createdAt": "2026-04-22T12:29:43.009Z",
+    "updatedAt": "2026-04-22T12:29:43.009Z",
+    "__v": 0
+  },
+  {
+    "_id": "69ec9318cf0fbbd60b6fbabf",
+    "username": "sireen",
+    "email": "s@gmail.com",
+    "password": "$2b$10$1fxtVq7qfxScFTcnBXNmvOTZU5/wb1jMmspnOBg6rEDXNnsxiOznu",
+    "role": "user",
+    "createdAt": "2026-04-25T10:10:32.661Z",
+    "updatedAt": "2026-04-25T10:10:32.661Z",
+    "__v": 0
+  },
+  {
+    "_id": "69ff21db15100b41e92c756a",
+    "username": "hazarkais",
+    "email": "hk@gmail.com",
+    "password": "$2b$10$PWKqg2fp.0CHgMkUObkF1Oub1vrl45DXpiQDLfCKEPeiX2xH26seS",
+    "role": "admin",
+    "createdAt": "2026-05-09T12:00:27.278Z",
+    "updatedAt": "2026-05-09T12:00:27.278Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a06350f7b205de47d60f55b",
+    "username": "hazark",
+    "email": "hazarkais@gmail.com",
+    "password": "$2b$10$rQFZ8L4UIAT6smiTFTOuhe/Crvi6gdMzkGOG.MJwXTqBVDbtHg./O",
+    "role": "admin",
+    "createdAt": "2026-05-14T20:48:15.427Z",
+    "updatedAt": "2026-05-14T20:48:15.427Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a16b40e88582af7de8d7c3c",
+    "username": "Fadel",
+    "email": "fadelfr61@gmail.com",
+    "password": "$2b$10$G8dXNj0A7zlgadZ6j.TSy.xalZD1vOz/oU/Ymhtk6S/.kxIV91yji",
+    "role": "user",
+    "createdAt": "2026-05-27T09:06:22.680Z",
+    "updatedAt": "2026-05-27T09:06:22.680Z",
+    "__v": 0
+  }
+]

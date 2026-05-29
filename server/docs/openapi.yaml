@@ -1,0 +1,735 @@
+openapi: 3.0.3
+info:
+  title: PC Part Compare API
+  description: |
+    REST API for browsing, comparing, and reviewing PC components.
+    
+    ## Authentication
+    Protected routes require a Bearer token in the `Authorization` header:
+    ```
+    Authorization: Bearer <token>
+    ```
+    Obtain a token by calling `POST /api/auth/login` or `POST /api/auth/register`.
+    
+    ## Rate Limiting
+    | Endpoint group         | Limit              |
+    |------------------------|--------------------|
+    | All `/api/*`           | 200 req / minute   |
+    | `POST /api/auth/login` | 10 req / 15 minutes |
+    | `POST /api/auth/register` | 10 req / 15 minutes |
+    | `GET /api/parts/*`     | 300 req / minute   |
+    | Review writes (POST/PUT/DELETE) | 20 req / 10 minutes |
+    
+    When exceeded, the API returns `429 Too Many Requests`.
+  version: 1.0.0
+  contact:
+    name: PC Part Compare
+
+servers:
+  - url: http://localhost:5000/api
+    description: Local development
+  - url: https://your-app.onrender.com/api
+    description: Production (update with your Render URL)
+
+tags:
+  - name: Health
+    description: Server health check
+  - name: Auth
+    description: Register, login, logout
+  - name: Parts
+    description: Browse and compare PC components
+  - name: Reviews
+    description: User reviews for parts
+
+# ─── Reusable Components ──────────────────────────────────────
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    # ── Success wrapper ──
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+
+    # ── Error wrapper ──
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: "Something went wrong"
+
+    # ── User ──
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "64f1a2b3c4d5e6f7a8b9c0d1"
+        username:
+          type: string
+          example: "fadel123"
+        email:
+          type: string
+          format: email
+          example: "fadel@example.com"
+        createdAt:
+          type: string
+          format: date-time
+
+    # ── Auth token response ──
+    AuthResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+        data:
+          type: object
+          properties:
+            user:
+              $ref: '#/components/schemas/User'
+            token:
+              type: string
+              example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+
+    # ── Part ──
+    Part:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: "64f1a2b3c4d5e6f7a8b9c0d1"
+        name:
+          type: string
+          example: "AMD Ryzen 9 7950X"
+        category:
+          type: string
+          enum: [CPU, GPU, RAM, Motherboard, Storage, PSU, Case, Cooling]
+          example: "CPU"
+        manufacturer:
+          type: string
+          example: "AMD"
+        price:
+          type: number
+          format: float
+          example: 549.99
+        specifications:
+          type: object
+          additionalProperties:
+            type: string
+          example:
+            cores: "16"
+            threads: "32"
+            socket: "AM5"
+        imageUrl:
+          type: string
+          format: uri
+          example: "https://example.com/image.jpg"
+        averageRating:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 5
+          example: 4.8
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    # ── Review ──
+    Review:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: "64f1a2b3c4d5e6f7a8b9c0d2"
+        user:
+          type: object
+          properties:
+            _id:
+              type: string
+            username:
+              type: string
+              example: "fadel123"
+        part:
+          type: string
+          example: "64f1a2b3c4d5e6f7a8b9c0d1"
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+          example: 5
+        comment:
+          type: string
+          example: "Excellent performance for the price."
+        helpfulCount:
+          type: integer
+          example: 3
+        createdAt:
+          type: string
+          format: date-time
+
+    # ── Paginated parts response ──
+    PartsListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        count:
+          type: integer
+          example: 20
+        total:
+          type: integer
+          example: 61
+        page:
+          type: integer
+          example: 1
+        totalPages:
+          type: integer
+          example: 4
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Part'
+
+# ─── Paths ────────────────────────────────────────────────────
+paths:
+
+  # ── Health ──────────────────────────────────────────────────
+  /health:
+    get:
+      tags: [Health]
+      summary: Health check
+      description: Returns server status and timestamp.
+      responses:
+        '200':
+          description: Server is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: OK
+                  message:
+                    type: string
+                    example: "Server is up and running"
+
+  # ── Auth ─────────────────────────────────────────────────────
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, email, password]
+              properties:
+                username:
+                  type: string
+                  minLength: 3
+                  example: "fadel123"
+                email:
+                  type: string
+                  format: email
+                  example: "fadel@example.com"
+                password:
+                  type: string
+                  minLength: 6
+                  example: "securepassword"
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          description: Validation error or email/username already taken
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Too many registration attempts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Login with email and password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: "fadel@example.com"
+                password:
+                  type: string
+                  example: "securepassword"
+      responses:
+        '200':
+          description: Login successful — returns JWT token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: Invalid email or password
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Too many login attempts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Logout current user
+      description: |
+        Signals logout. Since JWT is stateless, the client is responsible
+        for discarding the token. This endpoint just confirms the action.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/me:
+    get:
+      tags: [Auth]
+      summary: Get current logged-in user
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Current user data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      user:
+                        $ref: '#/components/schemas/User'
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ── Parts ────────────────────────────────────────────────────
+  /parts:
+    get:
+      tags: [Parts]
+      summary: Get all parts
+      description: Returns a paginated, filterable, sortable list of PC parts.
+      parameters:
+        - name: category
+          in: query
+          schema:
+            type: string
+            enum: [All, CPU, GPU, RAM, Motherboard, Storage, PSU, Case, Cooling]
+          example: CPU
+        - name: manufacturer
+          in: query
+          schema:
+            type: string
+          example: AMD
+        - name: search
+          in: query
+          description: Full-text search on name and manufacturer
+          schema:
+            type: string
+          example: Ryzen
+        - name: minPrice
+          in: query
+          schema:
+            type: number
+          example: 100
+        - name: maxPrice
+          in: query
+          schema:
+            type: number
+          example: 500
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum: [price_asc, price_desc, rating_desc, rating_asc, name_asc, name_desc]
+          example: price_asc
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+          example: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+            maximum: 100
+          example: 20
+      responses:
+        '200':
+          description: Paginated list of parts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartsListResponse'
+
+  /parts/compare:
+    get:
+      tags: [Parts]
+      summary: Compare 2–3 parts (GET)
+      parameters:
+        - name: ids
+          in: query
+          required: true
+          description: Comma-separated part IDs (2 or 3, same category)
+          schema:
+            type: string
+          example: "64f1a2b3c4d5e6f7a8b9c0d1,64f1a2b3c4d5e6f7a8b9c0d2"
+      responses:
+        '200':
+          description: Parts for comparison
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  count:
+                    type: integer
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Part'
+        '400':
+          description: Wrong number of IDs or different categories
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: One or more parts not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      tags: [Parts]
+      summary: Compare 2–3 parts (POST)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [ids]
+              properties:
+                ids:
+                  type: array
+                  items:
+                    type: string
+                  minItems: 2
+                  maxItems: 3
+                  example: ["64f1a2b3c4d5e6f7a8b9c0d1", "64f1a2b3c4d5e6f7a8b9c0d2"]
+      responses:
+        '200':
+          description: Parts for comparison
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  count:
+                    type: integer
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Part'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /parts/{id}:
+    get:
+      tags: [Parts]
+      summary: Get a single part by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "64f1a2b3c4d5e6f7a8b9c0d1"
+      responses:
+        '200':
+          description: Part found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/Part'
+        '400':
+          description: Invalid ID format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Part not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ── Reviews ──────────────────────────────────────────────────
+  /reviews/{partId}:
+    get:
+      tags: [Reviews]
+      summary: Get reviews for a part
+      parameters:
+        - name: partId
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "64f1a2b3c4d5e6f7a8b9c0d1"
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum: [newest, highest, mostHelpful]
+            default: newest
+      responses:
+        '200':
+          description: List of reviews
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  count:
+                    type: integer
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Review'
+        '404':
+          description: Part not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /reviews:
+    post:
+      tags: [Reviews]
+      summary: Add a review for a part
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [partId, rating, comment]
+              properties:
+                partId:
+                  type: string
+                  example: "64f1a2b3c4d5e6f7a8b9c0d1"
+                rating:
+                  type: integer
+                  minimum: 1
+                  maximum: 5
+                  example: 5
+                comment:
+                  type: string
+                  minLength: 10
+                  maxLength: 1000
+                  example: "Outstanding CPU, handles everything I throw at it."
+      responses:
+        '201':
+          description: Review added
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/Review'
+        '400':
+          description: Validation error or duplicate review
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Too many write requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /reviews/{id}:
+    put:
+      tags: [Reviews]
+      summary: Update your own review
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "64f1a2b3c4d5e6f7a8b9c0d2"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                rating:
+                  type: integer
+                  minimum: 1
+                  maximum: 5
+                  example: 4
+                comment:
+                  type: string
+                  minLength: 10
+                  maxLength: 1000
+                  example: "Updated thoughts — still great."
+      responses:
+        '200':
+          description: Review updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/Review'
+        '403':
+          description: Not your review
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Review not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      tags: [Reviews]
+      summary: Delete a review (owner or admin)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "64f1a2b3c4d5e6f7a8b9c0d2"
+      responses:
+        '200':
+          description: Review deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '403':
+          description: Not your review
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Review not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
