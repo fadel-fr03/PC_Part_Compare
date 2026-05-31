@@ -6,17 +6,20 @@ const reviewSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: [true, "User reference is required"],
+      index: true,
     },
     part: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Part",
       required: [true, "Part reference is required"],
+      index: true,
     },
     rating: {
       type: Number,
       required: [true, "Rating is required"],
       min: [1, "Rating must be at least 1"],
       max: [5, "Rating cannot exceed 5"],
+      index: true,
     },
     comment: {
       type: String,
@@ -29,23 +32,16 @@ const reviewSchema = new mongoose.Schema(
       type: Number,
       default: 0,
       min: 0,
+      index: true,
     },
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
 
-// ─── Indexes ───────────────────────────────────────────────────────────────────
-
-// Enforces one review per user per part + speeds up duplicate checks
 reviewSchema.index({ user: 1, part: 1 }, { unique: true });
-
-// Speeds up getReviewsByPart queries (the most frequent review lookup)
 reviewSchema.index({ part: 1, createdAt: -1 });
 reviewSchema.index({ part: 1, rating: -1 });
 reviewSchema.index({ part: 1, helpfulCount: -1 });
 
-// ──────────────────────────────────────────────────────────────────────────────
-
-module.exports = mongoose.model("Review", reviewSchema);
+module.exports =
+  mongoose.models.Review || mongoose.model("Review", reviewSchema);

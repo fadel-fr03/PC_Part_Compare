@@ -1,7 +1,15 @@
 const express = require("express");
 const router = express.Router();
 const { body, validationResult } = require("express-validator");
-const { register, login, logout, getMe } = require("../controllers/authController");
+const {
+  register,
+  login,
+  logout,
+  getMe,
+  updateProfile,
+  changePassword,
+  deleteAccount,
+} = require("../controllers/authController");
 const { protect } = require("../middleware/auth");
 
 // Validation middleware
@@ -52,6 +60,43 @@ router.post(
   validateRequest,
   login
 );
+
+// Update profile route with validation
+router.put(
+  "/profile",
+  protect,
+  [
+    body("username")
+      .trim()
+      .isLength({ min: 3 })
+      .withMessage("Username must be at least 3 characters"),
+    body("email")
+      .trim()
+      .isEmail()
+      .withMessage("Please enter a valid email"),
+  ],
+  validateRequest,
+  updateProfile
+);
+
+// Change password route with validation
+router.put(
+  "/change-password",
+  protect,
+  [
+    body("currentPassword")
+      .notEmpty()
+      .withMessage("Current password is required"),
+    body("newPassword")
+      .isLength({ min: 6 })
+      .withMessage("New password must be at least 6 characters"),
+  ],
+  validateRequest,
+  changePassword
+);
+
+// Delete account route
+router.delete("/delete-account", protect, deleteAccount);
 
 // Logout route (protected)
 router.post("/logout", protect, logout);

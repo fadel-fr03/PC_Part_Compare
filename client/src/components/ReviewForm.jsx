@@ -2,9 +2,11 @@ import { useState } from "react";
 import StarRating from "./StarRating";
 import { API_ENDPOINTS } from "../config/api";
 import { useAuth } from "../context/AuthContext";
+import { useCompare } from "../context/CompareContext";
 
 export default function ReviewForm({ partId, onReviewAdded }) {
   const { token, isAuthenticated } = useAuth();
+  const { showToast } = useCompare();
 
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
@@ -27,11 +29,13 @@ export default function ReviewForm({ partId, onReviewAdded }) {
 
     if (!rating) {
       setError("Please select a rating.");
+      showToast("Please select a rating.", "error");
       return;
     }
 
     if (comment.trim().length < 10) {
       setError("Comment must be at least 10 characters.");
+      showToast("Comment must be at least 10 characters.", "error");
       return;
     }
 
@@ -58,6 +62,8 @@ export default function ReviewForm({ partId, onReviewAdded }) {
       }
 
       setSuccess("Review submitted successfully!");
+      showToast("Review submitted successfully!", "success");
+
       setRating(0);
       setComment("");
 
@@ -66,6 +72,7 @@ export default function ReviewForm({ partId, onReviewAdded }) {
       }
     } catch (err) {
       setError(err.message || "Something went wrong");
+      showToast(err.message || "Something went wrong", "error");
     } finally {
       setSubmitting(false);
     }

@@ -18,7 +18,4 @@ router.use("/parts", partsRoutes);
 // Reviews
 router.use("/reviews", reviewRoutes);
 
-const swaggerRoute = require('./swaggerRoute');
-router.use('/api-docs', swaggerRoute);
-
 module.exports = router;

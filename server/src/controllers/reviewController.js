@@ -1,19 +1,17 @@
-const mongoose = require("mongoose");
 const { Review, Part } = require("../models");
 
 /**
- * Uses a single aggregation pipeline instead of fetching all reviews
- * into memory and reducing in JS — much faster at scale.
+ * Recalculate part average rating
  */
 const updatePartAverageRating = async (partId) => {
-  const result = await Review.aggregate([
-    { $match: { part: new mongoose.Types.ObjectId(partId) } },
-    { $group: { _id: "$part", avg: { $avg: "$rating" } } },
-  ]);
+  const reviews = await Review.find({ part: partId });
 
-  const averageRating = result.length > 0
-    ? Math.round(result[0].avg * 10) / 10   // round to 1 decimal
-    : 0;
+  let averageRating = 0;
+
+  if (reviews.length > 0) {
+    const total = reviews.reduce((sum, review) => sum + review.rating, 0);
+    averageRating = total / reviews.length;
+  }
 
   await Part.findByIdAndUpdate(partId, { averageRating });
 };
@@ -28,27 +26,27 @@ exports.getReviewsByPart = async (req, res) => {
     const { partId } = req.params;
     const { sort = "newest" } = req.query;
 
-    if (!mongoose.Types.ObjectId.isValid(partId)) {
-      return res.status(400).json({ success: false, message: "Invalid part ID" });
+    const part = await Part.findById(partId);
+    if (!part) {
+      return res.status(404).json({
+        success: false,
+        message: "Part not found",
+      });
     }
 
-    // Verify part exists (lean — no need for a full Mongoose document)
-    const partExists = await Part.exists({ _id: partId });
-    if (!partExists) {
-      return res.status(404).json({ success: false, message: "Part not found" });
-    }
+    let sortOption = { createdAt: -1 };
 
-    const sortMap = {
-      newest:      { createdAt: -1 },
-      highest:     { rating: -1, createdAt: -1 },
-      mostHelpful: { helpfulCount: -1, createdAt: -1 },
-    };
-    const sortOption = sortMap[sort] || sortMap.newest;
+    if (sort === "highest") {
+      sortOption = { rating: -1, createdAt: -1 };
+    } else if (sort === "mostHelpful") {
+      sortOption = { helpfulCount: -1, createdAt: -1 };
+    } else if (sort === "newest") {
+      sortOption = { createdAt: -1 };
+    }
 
     const reviews = await Review.find({ part: partId })
       .populate("user", "_id username")
-      .sort(sortOption)
-      .lean();
+      .sort(sortOption);
 
     res.status(200).json({
       success: true,
@@ -66,7 +64,7 @@ exports.getReviewsByPart = async (req, res) => {
 };
 
 /**
- * @desc    Add a review
+ * @desc    Add review
  * @route   POST /api/reviews
  * @access  Private
  */
@@ -74,56 +72,53 @@ exports.addReview = async (req, res) => {
   try {
     const { partId, rating, comment } = req.body;
 
-    if (!partId || rating === undefined || !comment) {
+    if (!partId || !rating || !comment) {
       return res.status(400).json({
         success: false,
         message: "partId, rating, and comment are required",
       });
     }
 
-    if (!mongoose.Types.ObjectId.isValid(partId)) {
-      return res.status(400).json({ success: false, message: "Invalid part ID" });
-    }
-
-    const ratingNum = Number(rating);
-    if (isNaN(ratingNum) || ratingNum < 1 || ratingNum > 5) {
+    if (Number(rating) < 1 || Number(rating) > 5) {
       return res.status(400).json({
         success: false,
         message: "Rating must be between 1 and 5",
       });
     }
 
-    const partExists = await Part.exists({ _id: partId });
-    if (!partExists) {
-      return res.status(404).json({ success: false, message: "Part not found" });
+    const part = await Part.findById(partId);
+    if (!part) {
+      return res.status(404).json({
+        success: false,
+        message: "Part not found",
+      });
     }
 
-    // The unique index on {user, part} will catch duplicates at the DB level,
-    // but a pre-check gives a friendlier error message before the write attempt.
-    const duplicate = await Review.exists({ user: req.user._id, part: partId });
-    if (duplicate) {
+    const existingReview = await Review.findOne({
+      user: req.user._id,
+      part: partId,
+    });
+
+    if (existingReview) {
       return res.status(400).json({
         success: false,
-        message: "You have already reviewed this part",
+        message: "You already reviewed this part",
       });
     }
 
     const review = await Review.create({
       user: req.user._id,
       part: partId,
-      rating: ratingNum,
+      rating: Number(rating),
       comment,
     });
 
-    // Update average in the background — no need to await before responding,
-    // but we do want errors surfaced in logs.
-    updatePartAverageRating(partId).catch((err) =>
-      console.error("updatePartAverageRating error:", err)
-    );
+    await updatePartAverageRating(partId);
 
-    const populatedReview = await Review.findById(review._id)
-      .populate("user", "_id username")
-      .lean();
+    const populatedReview = await Review.findById(review._id).populate(
+      "user",
+      "_id username"
+    );
 
     res.status(201).json({
       success: true,
@@ -136,7 +131,7 @@ exports.addReview = async (req, res) => {
     if (error.code === 11000) {
       return res.status(400).json({
         success: false,
-        message: "You have already reviewed this part",
+        message: "You already reviewed this part",
       });
     }
 
@@ -149,7 +144,7 @@ exports.addReview = async (req, res) => {
 };
 
 /**
- * @desc    Update own review
+ * @desc    Update review
  * @route   PUT /api/reviews/:id
  * @access  Private (owner only)
  */
@@ -158,13 +153,13 @@ exports.updateReview = async (req, res) => {
     const { id } = req.params;
     const { rating, comment } = req.body;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ success: false, message: "Invalid review ID" });
-    }
-
     const review = await Review.findById(id);
+
     if (!review) {
-      return res.status(404).json({ success: false, message: "Review not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Review not found",
+      });
     }
 
     if (review.user.toString() !== req.user._id.toString()) {
@@ -175,14 +170,13 @@ exports.updateReview = async (req, res) => {
     }
 
     if (rating !== undefined) {
-      const ratingNum = Number(rating);
-      if (isNaN(ratingNum) || ratingNum < 1 || ratingNum > 5) {
+      if (Number(rating) < 1 || Number(rating) > 5) {
         return res.status(400).json({
           success: false,
           message: "Rating must be between 1 and 5",
         });
       }
-      review.rating = ratingNum;
+      review.rating = Number(rating);
     }
 
     if (comment !== undefined) {
@@ -196,14 +190,12 @@ exports.updateReview = async (req, res) => {
     }
 
     await review.save();
+    await updatePartAverageRating(review.part);
 
-    updatePartAverageRating(review.part).catch((err) =>
-      console.error("updatePartAverageRating error:", err)
+    const populatedReview = await Review.findById(review._id).populate(
+      "user",
+      "_id username"
     );
-
-    const populatedReview = await Review.findById(review._id)
-      .populate("user", "_id username")
-      .lean();
 
     res.status(200).json({
       success: true,
@@ -221,21 +213,21 @@ exports.updateReview = async (req, res) => {
 };
 
 /**
- * @desc    Delete review (owner or admin)
+ * @desc    Delete review
  * @route   DELETE /api/reviews/:id
- * @access  Private
+ * @access  Private (owner or admin)
  */
 exports.deleteReview = async (req, res) => {
   try {
     const { id } = req.params;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ success: false, message: "Invalid review ID" });
-    }
-
     const review = await Review.findById(id);
+
     if (!review) {
-      return res.status(404).json({ success: false, message: "Review not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Review not found",
+      });
     }
 
     const isOwner = review.user.toString() === req.user._id.toString();
@@ -244,16 +236,14 @@ exports.deleteReview = async (req, res) => {
     if (!isOwner && !isAdmin) {
       return res.status(403).json({
         success: false,
-        message: "You can only delete your own review",
+        message: "You can only delete your own review unless you are admin",
       });
     }
 
     const partId = review.part;
-    await Review.findByIdAndDelete(id);
 
-    updatePartAverageRating(partId).catch((err) =>
-      console.error("updatePartAverageRating error:", err)
-    );
+    await Review.findByIdAndDelete(id);
+    await updatePartAverageRating(partId);
 
     res.status(200).json({
       success: true,

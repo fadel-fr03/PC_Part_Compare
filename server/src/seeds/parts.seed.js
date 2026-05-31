@@ -267,7 +267,7 @@ const parts = [
   {
     name: "MSI PRO B760M-A WiFi",
     category: "Motherboard", manufacturer: "MSI", price: 129.99,
-    specifications: { socket: "LGA1700", chipset: "B760", formFactor: "mATX", memorySlots: "4", maxMemory: "128GB DDR4/DDR5", pcie: "PCIe 5.0" },
+    specifications: { socket: "LGA1700", chipset: "B760", formFactor: "mATX", memorySlots: "4", maxMemory: "128GB DDR5", pcie: "PCIe 5.0" },
     imageUrl: "/Media/MSI_PRO_B760M-A_WiFi.jpg",
     averageRating: 4.5,
   },
@@ -398,7 +398,7 @@ const parts = [
   {
     name: "Corsair 5000D Airflow",
     category: "Case", manufacturer: "Corsair", price: 154.99,
-    specifications: { formFactor: "Mid Tower", compatibleMobo: "ATX/mATX/ITX", maxGpuLength: "420mm", maxCpuCoolerHeight: "170mm", driveBays: "2x 2.5\", 2x 3.5\"", frontPanel: "USB-A, USB-C" },
+    specifications: { formFactor: "Mid Tower", compatibleMobo: "E-ATX/ATX/mATX/ITX", maxGpuLength: "420mm", maxCpuCoolerHeight: "170mm", driveBays: "2x 2.5\", 2x 3.5\"", frontPanel: "USB-A, USB-C" },
     imageUrl: "/Media/Corsair_5000D_Airflow.png",
     averageRating: 4.7,
   },

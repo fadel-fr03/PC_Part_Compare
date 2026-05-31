@@ -5,6 +5,11 @@ export const API_ENDPOINTS = {
   auth: {
     login: `${API_URL}/api/auth/login`,
     register: `${API_URL}/api/auth/register`,
+    profile: `${API_URL}/api/auth/profile`,
+    changePassword: `${API_URL}/api/auth/change-password`,
+    deleteAccount: `${API_URL}/api/auth/delete-account`,
+    logout: `${API_URL}/api/auth/logout`,
+    me: `${API_URL}/api/auth/me`,
   },
   parts: {
     list: `${API_URL}/api/parts`,

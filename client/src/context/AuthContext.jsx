@@ -104,6 +104,64 @@ export function AuthProvider({ children }) {
     return { user: registeredUser, token: authToken };
   }
 
+  async function updateProfile({ username, email }) {
+    const res = await fetch(API_ENDPOINTS.auth.profile, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        username: username?.trim(),
+        email: email?.trim(),
+      }),
+    });
+
+    const data = await res.json();
+    console.log("UPDATE PROFILE RESPONSE:", data);
+
+    if (!res.ok) {
+      const msg =
+        data?.message ||
+        data?.error ||
+        (Array.isArray(data?.errors) && data.errors.length > 0
+          ? data.errors[0].msg
+          : null) ||
+        "Failed to update profile";
+      throw new Error(msg);
+    }
+
+    const updatedUser = data.data.user;
+    setUser(updatedUser);
+
+    return updatedUser;
+  }
+
+  async function deleteAccount() {
+    const res = await fetch(API_ENDPOINTS.auth.deleteAccount, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const data = await res.json();
+    console.log("DELETE ACCOUNT RESPONSE:", data);
+
+    if (!res.ok) {
+      const msg =
+        data?.message ||
+        data?.error ||
+        "Failed to delete account";
+      throw new Error(msg);
+    }
+
+    setUser(null);
+    setToken(null);
+
+    return true;
+  }
+
   function logout() {
     setUser(null);
     setToken(null);
@@ -117,6 +175,8 @@ export function AuthProvider({ children }) {
       loading,
       login,
       register,
+      updateProfile,
+      deleteAccount,
       logout,
       setUser,
       setToken,

@@ -1,19 +1,26 @@
 const express = require("express");
 const router = express.Router();
+
 const {
   getAllParts,
   getPartById,
   compareParts,
+  createPart,
+  updatePart,
+  deletePart,
 } = require("../controllers/partsController");
 
-// Get all parts with filtering/search
-router.get("/", getAllParts);
+const { protect, adminOnly } = require("../middleware/auth");
 
-// Compare parts
+// Public routes
+router.get("/", getAllParts);
 router.get("/compare", compareParts);
 router.post("/compare", compareParts);
-
-// Get single part by ID
 router.get("/:id", getPartById);
+
+// Admin-only routes
+router.post("/", protect, adminOnly, createPart);
+router.put("/:id", protect, adminOnly, updatePart);
+router.delete("/:id", protect, adminOnly, deletePart);
 
 module.exports = router;

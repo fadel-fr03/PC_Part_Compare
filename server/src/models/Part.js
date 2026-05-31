@@ -11,16 +11,19 @@ const partSchema = new mongoose.Schema(
       type: String,
       required: [true, "Category is required"],
       enum: ["CPU", "GPU", "RAM", "Motherboard", "Storage", "PSU", "Case", "Cooling"],
+      index: true,
     },
     manufacturer: {
       type: String,
       required: [true, "Manufacturer is required"],
       trim: true,
+      index: true,
     },
     price: {
       type: Number,
       required: [true, "Price is required"],
       min: [0, "Price cannot be negative"],
+      index: true,
     },
     specifications: {
       type: Map,
@@ -36,29 +39,15 @@ const partSchema = new mongoose.Schema(
       default: 0,
       min: 0,
       max: 5,
+      index: true,
     },
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
 
-// ─── Indexes ───────────────────────────────────────────────────────────────────
-
-// Primary filter fields used in getAllParts (category, manufacturer, price range)
-partSchema.index({ category: 1 });
-partSchema.index({ manufacturer: 1 });
-partSchema.index({ price: 1 });
-partSchema.index({ averageRating: -1 });
-
-// Compound index covers the most common query pattern:
-// filter by category + sort by price or rating
+partSchema.index({ name: "text", manufacturer: "text" });
 partSchema.index({ category: 1, price: 1 });
 partSchema.index({ category: 1, averageRating: -1 });
+partSchema.index({ createdAt: -1 });
 
-// Full-text search on name and manufacturer (used by the search param)
-partSchema.index({ name: "text", manufacturer: "text" });
-
-// ──────────────────────────────────────────────────────────────────────────────
-
-module.exports = mongoose.model("Part", partSchema);
+module.exports = mongoose.models.Part || mongoose.model("Part", partSchema);

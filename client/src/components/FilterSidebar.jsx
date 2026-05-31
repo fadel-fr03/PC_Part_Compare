@@ -15,8 +15,11 @@ export default function FilterSidebar({
     <div className="rounded-2xl border border-white/10 bg-white/5 p-5 sticky top-24">
       <h2 className="text-xl font-semibold text-white mb-5">Filters</h2>
 
+      {/* Category */}
       <div className="mb-5">
-        <label className="block text-sm text-slate-300 mb-2">Category</label>
+        <label className="block text-sm text-slate-300 mb-2">
+          Category
+        </label>
         <select
           value={selectedCategory}
           onChange={(e) => onCategoryChange(e.target.value)}
@@ -30,8 +33,11 @@ export default function FilterSidebar({
         </select>
       </div>
 
+      {/* Price Range */}
       <div className="mb-5">
-        <label className="block text-sm text-slate-300 mb-2">Price Range</label>
+        <label className="block text-sm text-slate-300 mb-2">
+          Price Range
+        </label>
         <div className="grid grid-cols-2 gap-3">
           <input
             type="number"
@@ -50,8 +56,11 @@ export default function FilterSidebar({
         </div>
       </div>
 
+      {/* Sort */}
       <div className="mb-6">
-        <label className="block text-sm text-slate-300 mb-2">Sort By</label>
+        <label className="block text-sm text-slate-300 mb-2">
+          Sort By
+        </label>
         <select
           value={sort}
           onChange={(e) => onSortChange(e.target.value)}
@@ -65,6 +74,7 @@ export default function FilterSidebar({
         </select>
       </div>
 
+      {/* Clear Button */}
       <button
         onClick={onClear}
         className="w-full rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold py-2.5 transition"
