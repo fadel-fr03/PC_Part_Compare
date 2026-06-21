@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Navigate, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import ReviewsList from "../components/ReviewsList";
+import ConfirmDialog from "../components/ConfirmDialog";
 import { API_ENDPOINTS } from "../config/api";
 
 export default function Dashboard() {
@@ -31,6 +32,7 @@ export default function Dashboard() {
 
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteError, setDeleteError] = useState("");
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
 
   useEffect(() => {
     setUsername(user?.username || "");
@@ -126,21 +128,19 @@ export default function Dashboard() {
     }
   };
 
-  const handleDeleteAccount = async () => {
+  const handleDeleteAccount = () => {
     setDeleteError("");
+    setConfirmDeleteOpen(true);
+  };
 
-    const confirmed = window.confirm(
-      "Are you sure you want to permanently delete your account?"
-    );
-
-    if (!confirmed) return;
-
+  const confirmDeleteAccount = async () => {
     try {
       setDeleteLoading(true);
       await deleteAccount();
       navigate("/", { replace: true });
     } catch (err) {
       setDeleteError(err.message || "Failed to delete account.");
+      setConfirmDeleteOpen(false);
     } finally {
       setDeleteLoading(false);
     }
@@ -406,6 +406,18 @@ export default function Dashboard() {
           </p>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={confirmDeleteOpen}
+        danger
+        title="Delete your account?"
+        message="This action is permanent and cannot be undone. All of your data will be removed."
+        confirmText="Delete Account"
+        cancelText="Keep Account"
+        loading={deleteLoading}
+        onConfirm={confirmDeleteAccount}
+        onCancel={() => setConfirmDeleteOpen(false)}
+      />
     </div>
   );
 }

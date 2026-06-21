@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import ConfirmDialog from "../components/ConfirmDialog";
 import { API_ENDPOINTS } from "../config/api";
 
 const emptyForm = {
@@ -22,6 +23,8 @@ export default function Admin() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [deleteId, setDeleteId] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   const categories = ["CPU", "GPU", "RAM", "Motherboard", "Storage", "PSU", "Case", "Cooling"];
 
@@ -153,12 +156,17 @@ export default function Admin() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleDelete = async (id) => {
-    const confirmed = window.confirm("Are you sure you want to delete this part?");
-    if (!confirmed) return;
+  const handleDelete = (id) => {
+    setDeleteId(id);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteId) return;
 
     try {
-      const res = await fetch(API_ENDPOINTS.parts.byId(id), {
+      setDeleting(true);
+
+      const res = await fetch(API_ENDPOINTS.parts.byId(deleteId), {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -175,6 +183,9 @@ export default function Admin() {
       fetchParts();
     } catch (err) {
       showError(err.message || "Failed to delete part");
+    } finally {
+      setDeleting(false);
+      setDeleteId(null);
     }
   };
 
@@ -366,6 +377,18 @@ export default function Admin() {
           </div>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={deleteId !== null}
+        danger
+        title="Delete this part?"
+        message="This will permanently remove the part from the catalog. This action cannot be undone."
+        confirmText="Delete Part"
+        cancelText="Cancel"
+        loading={deleting}
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteId(null)}
+      />
     </div>
   );
 }

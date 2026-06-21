@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import StarRating from "./StarRating";
+import ConfirmDialog from "./ConfirmDialog";
 import { API_ENDPOINTS } from "../config/api";
 import { useAuth } from "../context/AuthContext";
 
@@ -19,6 +20,7 @@ export default function ReviewsList({
   const [editRating, setEditRating] = useState(0);
   const [editComment, setEditComment] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
+  const [deleteId, setDeleteId] = useState(null);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -186,17 +188,18 @@ export default function ReviewsList({
     }
   };
 
-  const handleDelete = async (reviewId) => {
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this review?"
-    );
-    if (!confirmed) return;
+  const handleDelete = (reviewId) => {
+    setDeleteId(reviewId);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteId) return;
 
     try {
       setActionLoading(true);
       setError("");
 
-      const res = await fetch(API_ENDPOINTS.reviews.delete(reviewId), {
+      const res = await fetch(API_ENDPOINTS.reviews.delete(deleteId), {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -209,12 +212,13 @@ export default function ReviewsList({
         throw new Error(data.message || "Failed to delete review");
       }
 
-      setReviews((prev) => prev.filter((review) => review._id !== reviewId));
+      setReviews((prev) => prev.filter((review) => review._id !== deleteId));
     } catch (err) {
       console.error("Delete review error:", err);
       setError(err.message || "Failed to delete review");
     } finally {
       setActionLoading(false);
+      setDeleteId(null);
     }
   };
 
@@ -349,6 +353,18 @@ export default function ReviewsList({
           );
         })
       )}
+
+      <ConfirmDialog
+        open={deleteId !== null}
+        danger
+        title="Delete this review?"
+        message="This will permanently remove your review. This action cannot be undone."
+        confirmText="Delete Review"
+        cancelText="Cancel"
+        loading={actionLoading}
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteId(null)}
+      />
     </div>
   );
 }
